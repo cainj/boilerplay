@@ -1,10 +1,11 @@
 import models.{Ping, RequestMessage}
+import scribe.Logging
 import services.NavigationService
 import util._
 
 import scala.scalajs.js.timers._
 
-trait NetworkHelper { this: Boilerplay =>
+trait NetworkHelper extends Logging { this: Boilerplay =>
   private[this] val socket = new NetworkSocket(onSocketConnect _, onSocketMessage, onSocketError, onSocketClose _)
 
   protected[this] var latencyMs: Option[Int] = None
@@ -23,11 +24,11 @@ trait NetworkHelper { this: Boilerplay =>
   setTimeout(1000)(sendPing())
 
   protected[this] def onSocketConnect(): Unit = {
-    Logging.debug("Socket connected.")
+    logger.debug("Socket connected.")
   }
 
   protected[this] def onSocketError(error: String): Unit = {
-    Logging.error(s"Socket error [$error].")
+    logger.error(s"Socket error [$error].")
   }
 
   protected[this] def onSocketClose(): Unit = {

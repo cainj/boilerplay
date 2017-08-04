@@ -7,7 +7,7 @@ import com.codahale.metrics.Meter
 import play.api.http.Status
 import util.FutureUtils.defaultContext
 import play.api.mvc._
-import util.Logging
+import scribe.Logging
 import util.metrics.Instrumented
 
 import scala.concurrent.Future
@@ -46,7 +46,7 @@ class LoggingFilter @Inject() (override implicit val mat: Materializer) extends 
         } else {
           val endTime = System.currentTimeMillis
           val requestTime = endTime - startTime
-          log.info(s"${result.header.status} (${requestTime}ms): ${request.method} ${request.uri}")
+          logger.info(s"${result.header.status} (${requestTime}ms): ${request.method} ${request.uri}")
           result.withHeaders("X-Request-Time-Ms" -> requestTime.toString)
         }
       },

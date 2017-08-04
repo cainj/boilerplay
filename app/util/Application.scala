@@ -33,18 +33,18 @@ class Application @javax.inject.Inject() (
     val userService: UserService,
     val silhouette: Silhouette[AuthEnv],
     val ws: WSClient
-) extends Logging {
+) extends scribe.Logging {
   if (Application.initialized) {
-    log.info("Skipping initialization after failure.")
+    logger.info("Skipping initialization after failure.")
   } else {
     start()
   }
 
   val supervisor = actorSystem.actorOf(Props(classOf[ActorSupervisor], this), "supervisor")
-  log.debug(s"Actor Supervisor [${supervisor.path}] started for [${util.Config.projectId}].")
+  logger.debug(s"Actor Supervisor [${supervisor.path}] started for [${util.Config.projectId}].")
 
   private[this] def start() = {
-    log.info(s"${Config.projectName} is starting.")
+    logger.info(s"${Config.projectName} is starting.")
     Application.initialized = true
 
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"))

@@ -8,7 +8,7 @@ import models.queries.auth.UserQueries
 import models.user.User
 import util.FutureUtils.defaultContext
 import services.database.Database
-import util.Logging
+import scribe.Logging
 import util.cache.UserCache
 
 import scala.concurrent.Future

@@ -3,9 +3,11 @@ package util
 import akka.actor.ActorRef
 import models.ServerError
 
-object ExceptionUtils extends Logging {
+object ExceptionUtils extends scribe.Logging {
   def actorErrorFunction(out: ActorRef, key: String, t: Throwable) = {
-    log.warn(s"Error [$key] encountered of type [${t.getClass.getSimpleName}].", t)
+    logger.warn(s"Error [$key] encountered of type [${t.getClass.getSimpleName}].")
+    logger.warn(t)
+
     out ! ServerError(key, t.getMessage)
   }
 }

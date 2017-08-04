@@ -4,8 +4,9 @@ import com.mohiva.play.silhouette.api.actions.{SecuredRequest, UserAwareRequest}
 import models.auth.AuthEnv
 import util.FutureUtils.defaultContext
 import play.api.mvc._
+import scribe.Logging
 import util.metrics.Instrumented
-import util.{Application, Logging}
+import util.Application
 
 import scala.concurrent.Future
 
@@ -56,7 +57,7 @@ abstract class BaseController() extends InjectedController with Instrumented wit
               if (!request.uri.contains("signin")) {
                 r.withSession(r.session + ("returnUrl" -> request.uri))
               } else {
-                log.info(s"Skipping returnUrl for external url [${request.uri}].")
+                logger.info(s"Skipping returnUrl for external url [${request.uri}].")
                 r
               }
             }

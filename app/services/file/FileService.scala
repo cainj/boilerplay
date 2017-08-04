@@ -1,6 +1,6 @@
 package services.file
 
-import util.Logging
+import scribe.Logging
 
 object FileService extends Logging {
   private[this] var dataDir: Option[java.io.File] = None
@@ -9,8 +9,8 @@ object FileService extends Logging {
     dataDir = Some(d)
 
     if ((!d.exists) || (!d.isDirectory)) {
-      log.warn(s"Cannot load data directory [${d.getAbsolutePath}].")
-      log.warn("To set an alternate file cache directory, set [data.directory] in your configuration.")
+      logger.warn(s"Cannot load data directory [${d.getAbsolutePath}].")
+      logger.warn("To set an alternate file cache directory, set [data.directory] in your configuration.")
     }
   }
 

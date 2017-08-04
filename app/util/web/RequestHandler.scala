@@ -4,7 +4,7 @@ import javax.inject.Inject
 import play.api.http._
 import play.api.mvc.RequestHeader
 import play.api.routing.Router
-import util.Logging
+import scribe.Logging
 
 class RequestHandler @Inject() (
     errorHandler: HttpErrorHandler,
@@ -15,7 +15,7 @@ class RequestHandler @Inject() (
 
   override def routeRequest(request: RequestHeader) = {
     if (!Option(request.path).exists(_.startsWith("/assets"))) {
-      log.info(s"Request from [${request.remoteAddress}]: ${request.toString()}")
+      logger.info(s"Request from [${request.remoteAddress}]: ${request.toString()}")
     }
     super.routeRequest(request)
   }

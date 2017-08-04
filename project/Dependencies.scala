@@ -74,6 +74,9 @@ object Dependencies {
     val scapegoatVersion = "1.3.1"
     val enumeratumVersion = "1.5.14"
 
+    val scribeVersion = "1.4.3"
+    val scribeSlf4j = "com.outr" %% "scribe-slf4j" % scribeVersion
+
     val commonsIo = "commons-io" % "commons-io" % "2.5"
     val scalaGuice = "net.codingwell" %% "scala-guice" % "4.1.0"
   }

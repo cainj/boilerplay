@@ -9,7 +9,7 @@ import models.queries.auth._
 import models.user.{Role, User}
 import util.FutureUtils.defaultContext
 import services.database.Database
-import util.Logging
+import scribe.Logging
 import util.cache.UserCache
 
 import scala.concurrent.Future
@@ -22,7 +22,7 @@ class UserService @javax.inject.Inject() (hasher: PasswordHasher) extends Loggin
   def usernameLookup(id: UUID) = Database.query(UserQueries.GetUsername(id))
 
   def save(user: User, update: Boolean = false) = {
-    log.info(s"${if (update) { "Updating" } else { "Creating" }} user [$user].")
+    logger.info(s"${if (update) { "Updating" } else { "Creating" }} user [$user].")
     val statement = if (update) {
       UserQueries.UpdateUser(user)
     } else {
