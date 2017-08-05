@@ -16,6 +16,7 @@ import util.cache.CacheService
 import util.metrics.Instrumented
 
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 object Application {
   var initialized = false
@@ -29,6 +30,8 @@ class Application @javax.inject.Inject() (
     val actorSystem: ActorSystem,
     val ws: WSClient
 ) extends scribe.Logging {
+  logger.info(s"Starting [${util.Config.projectName}].")
+
   if (Application.initialized) {
     logger.info("Skipping initialization after failure.")
   } else {
@@ -38,7 +41,7 @@ class Application @javax.inject.Inject() (
   val supervisor = actorSystem.actorOf(Props(classOf[ActorSupervisor], this), "supervisor")
   logger.debug(s"Actor Supervisor [${supervisor.path}] started for [${util.Config.projectId}].")
 
-  private[this] def start() = {
+  private[this] def start() = try {
     LogInit.init(debug = config.debug)
 
     logger.info(s"${Config.projectName} is starting.")
@@ -54,14 +57,16 @@ class Application @javax.inject.Inject() (
 
     FileService.setRootDir(config.dataDir)
 
-    Database.open(config.cnf)
-    MasterDdl.init().map { _ =>
-      SettingsService.load()
-    }
+    //Database.open(config.cnf)
+    //MasterDdl.init().map { _ =>
+    //  SettingsService.load()
+    //}
+  } catch {
+    case NonFatal(x) => logger.error(new IllegalStateException("Cannot start application.", x))
   }
 
   private[this] def stop() = {
-    Database.close()
+    //Database.close()
     CacheService.close()
     SharedMetricRegistries.remove("default")
   }

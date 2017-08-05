@@ -26,9 +26,10 @@ object LogInit extends Logging {
     if (initialized) {
       throw new IllegalStateException("Logging initialized twice!")
     }
-    Logger.root.clearHandlers()
-    val h = if (debug) { handler(Level.Debug) } else { handler(Level.Info) }
-    Logger.root.addHandler(h)
+    //Logger.root.clearHandlers()
+    //val h = if (debug) { handler(Level.Debug) } else { handler(Level.Info) }
+    //Logger.root.addHandler(h)
+    Logger.root.info("Logging inititalized.")
     initialized = true
   }
 }

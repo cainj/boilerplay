@@ -23,6 +23,7 @@ class HomeController @javax.inject.Inject() (
   private[this] implicit val t = new MessageFrameFormatter(app.config.debug).transformer
 
   def home() = withSession("home") { implicit request =>
+    logger.info("Index page called.")
     Future.successful(Ok(views.html.index(UUID.randomUUID(), app.config.debug)))
   }
 
