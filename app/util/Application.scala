@@ -44,6 +44,8 @@ class Application @javax.inject.Inject() (
   logger.debug(s"Actor Supervisor [${supervisor.path}] started for [${util.Config.projectId}].")
 
   private[this] def start() = {
+    LogInit.init(debug = config.debug)
+
     logger.info(s"${Config.projectName} is starting.")
     Application.initialized = true
 

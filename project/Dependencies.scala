@@ -25,7 +25,7 @@ object Dependencies {
 
   object Authentication {
     private[this] val version = "5.0.0-RC3"
-    val silhouette = "com.mohiva" %% "play-silhouette" % version
+    val silhouette = "com.mohiva" %% "play-silhouette" % version exclude("com.typesafe.play", "play-logback_2.12")
     val hasher = "com.mohiva" %% "play-silhouette-password-bcrypt" % version
     val persistence = "com.mohiva" %% "play-silhouette-persistence" % version
     val crypto = "com.mohiva" %% "play-silhouette-crypto-jca" % version
@@ -76,6 +76,7 @@ object Dependencies {
 
     val scribeVersion = "1.4.3"
     val scribeSlf4j = "com.outr" %% "scribe-slf4j" % scribeVersion
+    val logbackCore = "ch.qos.logback" % "logback-core" % "1.2.3"
 
     val commonsIo = "commons-io" % "commons-io" % "2.5"
     val scalaGuice = "net.codingwell" %% "scala-guice" % "4.1.0"
