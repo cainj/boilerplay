@@ -18,6 +18,7 @@ import play.routes.compiler.InjectedRoutesGenerator
 import play.sbt.PlayImport.PlayKeys
 import play.sbt.routes.RoutesKeys.routesGenerator
 import play.sbt.PlayImport.PlayKeys._
+import play.sbt.PlayLogback
 import webscalajs.WebScalaJS.autoImport._
 import sbt.Keys._
 import sbt.Project.projectToRef
@@ -31,7 +32,7 @@ object Server {
       Akka.actor, Akka.logging, Play.filters, Play.guice, Play.ws, Play.json, Play.cache,
       Database.postgres, GraphQL.sangria, GraphQL.playJson, GraphQL.circe,
       WebJars.jquery, WebJars.fontAwesome, WebJars.materialize, WebJars.moment, WebJars.mousetrap,
-      Utils.scalaGuice, Utils.commonsIo, Akka.testkit, Play.test, Testing.scalaTest
+      Utils.scalaGuice, Utils.commonsIo, Utils.scribeSlf4j, Utils.logbackCore, Akka.testkit, Play.test, Testing.scalaTest
     )
   }
 
@@ -71,7 +72,7 @@ object Server {
     ).enablePlugins(
       SbtWeb, play.sbt.PlayScala, JavaAppPackaging,
       UniversalPlugin, LinuxPlugin, DebianPlugin, RpmPlugin, DockerPlugin, WindowsPlugin, JDKPackagerPlugin
-    ).settings(serverSettings: _*).aggregate(projectToRef(Client.client)).settings(Packaging.settings: _*)
+    ).disablePlugins(PlayLogback).settings(serverSettings: _*).aggregate(projectToRef(Client.client)).settings(Packaging.settings: _*)
 
     Shared.withProjects(ret, Seq(Shared.sharedJvm, Utilities.metrics))
   }

@@ -4,7 +4,7 @@ import java.util.UUID
 
 import akka.actor.{ActorRef, Props}
 import models._
-import util.Logging
+import scribe.Logging
 import util.metrics.InstrumentedActor
 
 object SocketService {
@@ -18,7 +18,7 @@ case class SocketService(
 ) extends InstrumentedActor with RequestMessageHelper with Logging {
 
   override def preStart() = {
-    log.info(s"Starting connection for user [$user].")
+    logger.info(s"Starting connection for user [$user].")
     supervisor ! SocketStarted(user, id, self)
     out ! UserSettings(user)
   }

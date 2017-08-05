@@ -1,6 +1,6 @@
 import models._
 import ui.UserManager
-import util.{DateUtils, Logging, NetworkMessage}
+import util.{DateUtils, NetworkMessage}
 
 trait ResponseMessageHelper { this: Boilerplay =>
   protected[this] def handleMessage(rm: ResponseMessage) = rm match {
@@ -8,6 +8,6 @@ trait ResponseMessageHelper { this: Boilerplay =>
     case us: UserSettings => UserManager.onUserSettings(us)
 
     case se: ServerError => handleServerError(se.reason, se.content)
-    case _ => Logging.warn(s"Received unknown message of type [${rm.getClass.getSimpleName}].")
+    case _ => logger.warn(s"Received unknown message of type [${rm.getClass.getSimpleName}].")
   }
 }

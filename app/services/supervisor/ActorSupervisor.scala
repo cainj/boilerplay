@@ -6,8 +6,9 @@ import akka.actor.SupervisorStrategy.Stop
 import akka.actor.{ActorRef, OneForOneStrategy, SupervisorStrategy}
 import models._
 import java.time.LocalDateTime
+import scribe.Logging
 import util.metrics.{InstrumentedActor, MetricsServletActor}
-import util.{Application, DateUtils, Logging}
+import util.{Application, DateUtils}
 
 object ActorSupervisor {
   case class SocketRecord(user: UUID, actorRef: ActorRef, started: LocalDateTime)
@@ -35,8 +36,8 @@ class ActorSupervisor(val app: Application) extends InstrumentedActor with Loggi
     case ct: SendSocketTrace => timeReceive(ct) { handleSendSocketTrace(ct) }
     case ct: SendClientTrace => timeReceive(ct) { handleSendClientTrace(ct) }
 
-    case im: InternalMessage => log.warn(s"Unhandled internal message [${im.getClass.getSimpleName}] received.")
-    case x => log.warn(s"ActorSupervisor encountered unknown message: ${x.toString}")
+    case im: InternalMessage => logger.warn(s"Unhandled internal message [${im.getClass.getSimpleName}] received.")
+    case x => logger.warn(s"ActorSupervisor encountered unknown message: ${x.toString}")
   }
 
   private[this] def handleGetSystemStatus() = {
@@ -55,7 +56,7 @@ class ActorSupervisor(val app: Application) extends InstrumentedActor with Loggi
   }
 
   protected[this] def handleSocketStarted(user: UUID, socketId: UUID, socket: ActorRef) = {
-    log.debug(s"Socket [$socketId] registered to [$user] with path [${socket.path}].")
+    logger.debug(s"Socket [$socketId] registered to [$user] with path [${socket.path}].")
     ActorSupervisor.sockets(socketId) = SocketRecord(user, socket, DateUtils.now)
     socketsCounter.inc()
   }
@@ -64,8 +65,8 @@ class ActorSupervisor(val app: Application) extends InstrumentedActor with Loggi
     ActorSupervisor.sockets.remove(id) match {
       case Some(sock) =>
         socketsCounter.dec()
-        log.debug(s"Connection [$id] [${sock.actorRef.path}] stopped.")
-      case None => log.warn(s"Socket [$id] stopped but is not registered.")
+        logger.debug(s"Connection [$id] [${sock.actorRef.path}] stopped.")
+      case None => logger.warn(s"Socket [$id] stopped but is not registered.")
     }
   }
 }

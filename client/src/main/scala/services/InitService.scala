@@ -1,14 +1,16 @@
 package services
 
 import models.RequestMessage
-import util.{Logging, NetworkMessage}
+import scribe.Logging
+import util.{LogHelper, NetworkMessage}
 
-object InitService {
-  def init(sendMessage: (RequestMessage) => Unit, connect: () => Unit) = {
-    Logging.installErrorHandler()
+object InitService extends Logging {
+  def init(sendMessage: (RequestMessage) => Unit, connect: () => Unit, debug: Boolean) = {
+    LogHelper.init(debug)
+
     NetworkMessage.register(sendMessage)
 
-    Logging.debug(util.Config.projectName + " has started.")
+    logger.debug(util.Config.projectName + " has started.")
     connect()
   }
 }

@@ -6,7 +6,7 @@ import models.ddl.DdlQueries.DdlStatement
 import models.ddl.{DdlFile, DdlQueries}
 import org.apache.commons.io.FileUtils
 import java.time.LocalDateTime
-import util.Logging
+import scribe.Logging
 import util.FutureUtils.defaultContext
 
 import scala.concurrent.duration._
@@ -42,7 +42,7 @@ object MasterDdl extends Logging {
     val appliedFiles = withData.map { data =>
       val candidates = files.filterNot(f => data.exists(_.id == f.id))
       val applied = candidates.map { f =>
-        log.info(s"Applying [${f.statements.size}] statements for DDL [${f.id}:${f.name}].")
+        logger.info(s"Applying [${f.statements.size}] statements for DDL [${f.id}:${f.name}].")
         val tx = Database.transaction { conn =>
           f.statements.map { sql =>
             val statement = DdlStatement(sql._1)

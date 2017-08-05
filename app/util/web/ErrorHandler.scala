@@ -6,7 +6,8 @@ import play.api.http.DefaultHttpErrorHandler
 import play.api._
 import play.api.mvc._
 import play.api.routing.Router
-import util.Logging
+import scribe.Logging
+
 import scala.concurrent._
 
 class ErrorHandler @Inject() (

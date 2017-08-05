@@ -1,8 +1,9 @@
 package controllers
 
 import play.api.mvc._
+import scribe.Logging
 import util.metrics.Instrumented
-import util.{Application, Logging}
+import util.Application
 
 import util.FutureUtils.defaultContext
 
