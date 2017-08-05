@@ -42,7 +42,7 @@ class Application @javax.inject.Inject() (
   logger.debug(s"Actor Supervisor [${supervisor.path}] started for [${util.Config.projectId}].")
 
   private[this] def start() = try {
-    LogInit.init(debug = config.debug)
+    LogInit.init(debug = false)
 
     logger.info(s"${Config.projectName} is starting.")
     Application.initialized = true
@@ -57,6 +57,7 @@ class Application @javax.inject.Inject() (
 
     FileService.setRootDir(config.dataDir)
 
+    // BUG: When postgres-async calls netty, "java.lang.NullPointerException: name" is triggered.
     //Database.open(config.cnf)
     //MasterDdl.init().map { _ =>
     //  SettingsService.load()

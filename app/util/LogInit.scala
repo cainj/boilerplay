@@ -1,7 +1,7 @@
 package util
 
 import scribe.formatter.FormatterBuilder
-import scribe.writer.FileWriter
+import scribe.writer.{ConsoleWriter, FileWriter}
 import scribe.{Level, LogHandler, Logger, Logging}
 
 object LogInit extends Logging {
@@ -9,26 +9,26 @@ object LogInit extends Logging {
 
   private[this] val logDir = new java.io.File("./logs")
 
-  private[this] val format = FormatterBuilder().date().string(" ").level.string(" ").positionAbbreviated.newLine.string(" - ").message.newLine
+  private[this] val format = FormatterBuilder().date().string(" ").level.string(" ").classNameAbbreviated.string(":").lineNumber.string(" - ").message.newLine
 
-  private[this] val writer = FileWriter.daily(
+  private[this] val fileWriter = FileWriter.daily(
     name = util.Config.projectId,
     directory = logDir
   )
 
-  private[this] def handler(l: Level) = LogHandler(
-    level = l,
-    formatter = format,
-    writer = writer
+  private[this] def handlers(l: Level) = Seq(
+    LogHandler(level = l, formatter = format, writer = fileWriter),
+    LogHandler(level = l, formatter = format, writer = ConsoleWriter)
   )
 
   def init(debug: Boolean) = {
     if (initialized) {
       throw new IllegalStateException("Logging initialized twice!")
     }
-    //Logger.root.clearHandlers()
-    //val h = if (debug) { handler(Level.Debug) } else { handler(Level.Info) }
-    //Logger.root.addHandler(h)
+    Logger.root.clearHandlers()
+    val h = if (debug) { handlers(Level.Debug) } else { handlers(Level.Info) }
+    h.foreach(Logger.root.addHandler)
+
     Logger.root.info("Logging inititalized.")
     initialized = true
   }
