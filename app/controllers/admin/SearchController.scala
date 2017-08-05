@@ -3,6 +3,7 @@ package controllers.admin
 import java.util.UUID
 
 import controllers.BaseController
+import play.twirl.api.Html
 import util.Application
 import util.FutureUtils.defaultContext
 
@@ -22,20 +23,13 @@ class SearchController @javax.inject.Inject() (override val app: Application) ex
     }
 
     resultF.map { results =>
-      Ok(views.html.admin.explore.searchResults(q, results, request.identity))
+      Ok(views.html.admin.explore.searchResults(q, results, UUID.randomUUID))
     }
   }
 
-  private[this] def searchUuid(q: String, id: UUID) = app.userService.getById(id).map {
-    case Some(u) => Seq(views.html.admin.user.userSearchResult(u, s"User [foo] matched id [$q]."))
-    case None => Nil
-  }
+  private[this] def searchUuid(q: String, id: UUID) = Future.successful(Seq.empty[Html])
 
-  private[this] def searchInt(q: String, id: Int) = {
-    Future.successful(Nil)
-  }
+  private[this] def searchInt(q: String, id: Int) = Future.successful(Seq.empty[Html])
 
-  private[this] def searchString(q: String) = app.userService.getAll().map { users =>
-    users.map(u => views.html.admin.user.userSearchResult(u, s"User [foo] matched email [$q]."))
-  }
+  private[this] def searchString(q: String) = Future.successful(Seq.empty[Html])
 }

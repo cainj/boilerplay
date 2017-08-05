@@ -5,13 +5,12 @@ import java.util.UUID
 import akka.actor.SupervisorStrategy.Stop
 import akka.actor.{ActorRef, OneForOneStrategy, SupervisorStrategy}
 import models._
-import models.user.User
 import java.time.LocalDateTime
 import util.metrics.{InstrumentedActor, MetricsServletActor}
 import util.{Application, DateUtils, Logging}
 
 object ActorSupervisor {
-  case class SocketRecord(userId: UUID, name: String, actorRef: ActorRef, started: LocalDateTime)
+  case class SocketRecord(user: UUID, actorRef: ActorRef, started: LocalDateTime)
   protected val sockets = collection.mutable.HashMap.empty[UUID, SocketRecord]
 }
 
@@ -41,7 +40,7 @@ class ActorSupervisor(val app: Application) extends InstrumentedActor with Loggi
   }
 
   private[this] def handleGetSystemStatus() = {
-    val connectionStatuses = ActorSupervisor.sockets.toList.sortBy(_._2.name).map(x => x._1 -> x._2.name)
+    val connectionStatuses = ActorSupervisor.sockets.toList.sortBy(_._2.user).map(x => x._1 -> x._2.user)
     sender() ! SystemStatus(connectionStatuses)
   }
 
@@ -55,9 +54,9 @@ class ActorSupervisor(val app: Application) extends InstrumentedActor with Loggi
     case None => sender() ! ServerError("Unknown Client Socket", ct.id.toString)
   }
 
-  protected[this] def handleSocketStarted(user: User, socketId: UUID, socket: ActorRef) = {
-    log.debug(s"Socket [$socketId] registered to [${user.username}] with path [${socket.path}].")
-    ActorSupervisor.sockets(socketId) = SocketRecord(user.id, user.username, socket, DateUtils.now)
+  protected[this] def handleSocketStarted(user: UUID, socketId: UUID, socket: ActorRef) = {
+    log.debug(s"Socket [$socketId] registered to [$user] with path [${socket.path}].")
+    ActorSupervisor.sockets(socketId) = SocketRecord(user, socket, DateUtils.now)
     socketsCounter.inc()
   }
 

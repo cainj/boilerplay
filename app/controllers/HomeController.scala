@@ -1,8 +1,9 @@
 package controllers
 
+import java.util.UUID
+
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import com.mohiva.play.silhouette.api.HandlerResult
 import models.{RequestMessage, ResponseMessage}
 import util.FutureUtils.defaultContext
 import play.api.libs.streams.ActorFlow
@@ -22,19 +23,15 @@ class HomeController @javax.inject.Inject() (
   private[this] implicit val t = new MessageFrameFormatter(app.config.debug).transformer
 
   def home() = withSession("home") { implicit request =>
-    Future.successful(Ok(views.html.index(request.identity, app.config.debug)))
+    Future.successful(Ok(views.html.index(UUID.randomUUID(), app.config.debug)))
   }
 
   def connect() = WebSocket.acceptOrResult[RequestMessage, ResponseMessage] { request =>
     implicit val req = Request(request, AnyContentAsEmpty)
-    app.silhouette.SecuredRequestHandler { securedRequest =>
-      Future.successful(HandlerResult(Ok, Some(securedRequest.identity)))
-    }.map {
-      case HandlerResult(_, Some(user)) => Right(ActorFlow.actorRef { out =>
-        SocketService.props(None, app.supervisor, user, out, request.remoteAddress)
-      })
-      case HandlerResult(_, None) => Left(Redirect(controllers.routes.HomeController.home()))
-    }
+    val user = UUID.randomUUID()
+    Future.successful(Right(ActorFlow.actorRef { out =>
+      SocketService.props(None, app.supervisor, user, out, request.remoteAddress)
+    }))
   }
 
   def untrail(path: String) = Action.async {

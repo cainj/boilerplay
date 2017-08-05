@@ -1,6 +1,7 @@
 package models.graphql
 
-import models.user.User
+import java.util.UUID
+
 import util.Application
 
-case class GraphQLContext(app: Application, user: User)
+case class GraphQLContext(app: Application, user: UUID)

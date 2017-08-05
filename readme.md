@@ -1,13 +1,12 @@
 # Boilerplay
 
-Using the latest technology in the Scala ecosystem, Boilerplay is a pure Scala reactive web application built on Play 2.6, ScalaJS, Silhouette 5, Akka, Sangria, and postgres-async.
+Using the latest technology in the Scala ecosystem, Boilerplay is a pure Scala reactive web application built on Play 2.6, ScalaJS, Akka, Sangria, and postgres-async.
 It provides a good starting point for whatever you want to build.
+
 
 ## Features
 
-* Local sign-in, profile, and change password support.
-* Role based security, with normal and admin roles.
-* Full admin suite for user management, reporting, and real-time session observation.
+* Full admin suite for monitoring the system and sessions in real-time.
 * GraphQL schema and query interface, with shared queries and mutations.
 * Scala source that is shared between the client and server via Scala.js.
 * Websocket-driven actor support, with monitoring and tracing.
@@ -44,7 +43,7 @@ $ open http://127.0.0.1:9000
 
 As the application starts, it will create database tables and seed data.
 
-The first account to sign up is created as an Admin, all subsequent users will have a normal user role.
+The admin section is behind a password. It defaults to 'admin', but you should change it in `application.conf`.
 
 
 ## Projects
@@ -90,7 +89,6 @@ Boilerplay relies on a whole lot of tremendous open source projects. Here's a fe
 * [circe](https://circe.github.io/circe)
 * [Scalatags](https://github.com/lihaoyi/scalatags)
 * [Postgres-async](https://github.com/mauricio/postgresql-async)
-* [Silhouette](https://www.silhouette.rocks)
 * [Dropwizard Metrics](http://metrics.dropwizard.io)
 * [Netty](http://netty.io)
 * [ScalaCrypt](https://github.com/Richard-W/scalacrypt)

@@ -4,8 +4,6 @@ import java.util.TimeZone
 
 import akka.actor.{ActorSystem, Props}
 import com.codahale.metrics.SharedMetricRegistries
-import com.mohiva.play.silhouette.api.Silhouette
-import models.auth.AuthEnv
 import play.api.Environment
 import play.api.inject.ApplicationLifecycle
 import util.FutureUtils.defaultContext
@@ -14,7 +12,6 @@ import services.database.{Database, MasterDdl}
 import services.file.FileService
 import services.settings.SettingsService
 import services.supervisor.ActorSupervisor
-import services.user.UserService
 import util.cache.CacheService
 import util.metrics.Instrumented
 
@@ -30,8 +27,6 @@ class Application @javax.inject.Inject() (
     val lifecycle: ApplicationLifecycle,
     val playEnv: Environment,
     val actorSystem: ActorSystem,
-    val userService: UserService,
-    val silhouette: Silhouette[AuthEnv],
     val ws: WSClient
 ) extends Logging {
   if (Application.initialized) {

@@ -1,9 +1,10 @@
 package services.graphql
 
+import java.util.UUID
+
 import io.circe.Json
 import io.circe.parser._
 import models.graphql.{GraphQLContext, Schema}
-import models.user.User
 import sangria.execution.{Executor, HandledException, QueryReducer}
 import sangria.marshalling.circe._
 import sangria.parser.QueryParser
@@ -20,7 +21,7 @@ object GraphQLService {
 
   private[this] val rejectComplexQueries = QueryReducer.rejectComplexQueries[Any](1000, (_, _) => new IllegalArgumentException(s"Query is too complex."))
 
-  def executeQuery(app: Application, query: String, variables: Option[Json], operation: Option[String], user: User) = {
+  def executeQuery(app: Application, query: String, variables: Option[Json], operation: Option[String], user: UUID) = {
     val ctx = GraphQLContext(app, user)
     QueryParser.parse(query) match {
       case Success(ast) => Executor.execute(

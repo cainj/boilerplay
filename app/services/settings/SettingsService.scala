@@ -40,6 +40,4 @@ object SettingsService {
     settings = SettingKey.values.map(k => Setting(k, settingsMap.getOrElse(k, k.default)))
     value
   }
-
-  def allowRegistration = asBool(SettingKey.AllowRegistration)
 }

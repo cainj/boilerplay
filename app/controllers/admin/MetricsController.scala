@@ -1,5 +1,7 @@
 package controllers.admin
 
+import java.util.UUID
+
 import controllers.BaseController
 import util.Application
 import util.FutureUtils.defaultContext
@@ -12,7 +14,7 @@ class MetricsController @javax.inject.Inject() (override val app: Application) e
     val f = call.get()
 
     f.map { json =>
-      Ok(views.html.admin.metrics(request.identity, json.body))
+      Ok(views.html.admin.metrics(UUID.randomUUID, json.body))
     }
   }
 }

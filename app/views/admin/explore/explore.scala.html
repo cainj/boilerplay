@@ -1,4 +1,4 @@
-@(user: models.user.User)(implicit request: Request[AnyContent], session: Session, flash: Flash)
+@(user: java.util.UUID)(implicit request: Request[AnyContent], session: Session, flash: Flash)
 @layout.admin(user, "explore", "Explore " + util.Config.projectName) {
   <div class="content-panel">
     <ul class="collection with-header">
@@ -6,10 +6,6 @@
         <h5>Explore @util.Config.projectName. </h5>
       </li>
       <!-- Other Models -->
-      <li class="collection-item">
-        <a class="theme-text" href="@controllers.admin.routes.UserEditController.users()">User Management</a>
-        <div><em>Manage the users of the system.</em></div>
-      </li>
     </ul>
   </div>
   <div class="panel-action">

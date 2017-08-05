@@ -1,5 +1,7 @@
 package controllers.admin.graphql
 
+import java.util.UUID
+
 import controllers.BaseController
 import models.graphql.Schema
 import sangria.renderer.SchemaRenderer
@@ -14,6 +16,6 @@ class SchemaController @javax.inject.Inject() (override val app: Application) ex
   }
 
   def voyager() = withAdminSession("schema.render") { implicit request =>
-    Future.successful(Ok(views.html.admin.graphql.voyager(request.identity)))
+    Future.successful(Ok(views.html.admin.graphql.voyager(UUID.randomUUID())))
   }
 }

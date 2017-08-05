@@ -1,4 +1,4 @@
-@(user: Option[models.user.User], title: String, scripts: Seq[String] = Nil, stylesheets: Seq[String] = Nil)(content: Html)(implicit session: Session, flash: Flash)@basic(
+@(user: Option[java.util.UUID], title: String, scripts: Seq[String] = Nil, stylesheets: Seq[String] = Nil)(content: Html)(implicit session: Session, flash: Flash)@basic(
   user,
   title,
   scripts = Seq(
