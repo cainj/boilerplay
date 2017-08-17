@@ -1,8 +1,8 @@
 package services.database
 
 import com.github.mauricio.async.db.pool.{ConnectionPool, PoolConfiguration}
-import com.github.mauricio.async.db.postgresql.PostgreSQLConnection
-import com.github.mauricio.async.db.postgresql.pool.PostgreSQLConnectionFactory
+import com.github.mauricio.async.db.mysql.MySQLConnection
+import com.github.mauricio.async.db.mysql.pool.MySQLConnectionFactory
 import com.github.mauricio.async.db.{Configuration, Connection, QueryResult}
 import models.database.{RawQuery, Statement}
 import org.slf4j.LoggerFactory
@@ -15,8 +15,8 @@ import scala.concurrent.{Await, Future}
 object Database extends Instrumented {
   private[this] val log = LoggerFactory.getLogger(Database.getClass)
   private[this] val poolConfig = new PoolConfiguration(maxObjects = 100, maxIdle = 10, maxQueueSize = 1000)
-  private[this] var factory: PostgreSQLConnectionFactory = _
-  private[this] var pool: ConnectionPool[PostgreSQLConnection] = _
+  private[this] var factory: MySQLConnectionFactory = _
+  private[this] var pool: ConnectionPool[MySQLConnection] = _
   private[this] var config: Option[Configuration] = None
   def getConfig = config.getOrElse(throw new IllegalStateException("Database not open."))
 
@@ -32,7 +32,7 @@ object Database extends Instrumented {
   }
 
   def open(configuration: Configuration): Unit = {
-    factory = new PostgreSQLConnectionFactory(configuration)
+    factory = new MySQLConnectionFactory(configuration)
     pool = new ConnectionPool(factory, poolConfig)
     config = Some(configuration)
 

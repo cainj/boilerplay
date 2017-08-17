@@ -32,7 +32,7 @@ object Dependencies {
   }
 
   object Database {
-    val postgres = "com.github.mauricio" %% "postgresql-async" % "0.2.21" //exclude("io.netty", "netty-all")
+    val mysql = "com.github.mauricio" %% "mysql-async" % "0.2.21"
   }
 
   object GraphQL {

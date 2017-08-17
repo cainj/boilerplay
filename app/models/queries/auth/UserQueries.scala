@@ -62,7 +62,7 @@ object UserQueries extends BaseQueries[User] {
   }
 
   override protected def fromRow(row: Row) = {
-    val id = row.as[UUID]("id")
+    val id = UUID.fromString(row.as[String]("id"))
     val username = row.as[String]("username")
     val prefsString = row.as[String]("prefs")
     val preferences = JsonSerializers.readPreferences(prefsString)
@@ -73,6 +73,6 @@ object UserQueries extends BaseQueries[User] {
   }
 
   override protected def toDataSeq(u: User) = {
-    Seq(u.id, u.username, JsonSerializers.writePreferences(u.preferences), u.profile.providerKey, u.role.toString, toJoda(u.created))
+    Seq(u.id.toString, u.username, JsonSerializers.writePreferences(u.preferences), u.profile.providerKey, u.role.toString, toJoda(u.created))
   }
 }

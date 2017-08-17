@@ -1,6 +1,6 @@
 # Boilerplay
 
-Using the latest technology in the Scala ecosystem, Boilerplay is a pure Scala reactive web application built on Play 2.6, ScalaJS, Silhouette 5, Akka, Sangria, and postgres-async.
+Using the latest technology in the Scala ecosystem, Boilerplay is a pure Scala reactive web application built on Play 2.6, ScalaJS, Silhouette 5, Akka, Sangria, and mysql-async.
 It provides a good starting point for whatever you want to build.
 
 ## Features
@@ -16,7 +16,7 @@ It provides a good starting point for whatever you want to build.
 ## Technology
 
 The Play application communicates over a WebSocket to a pool of Akka actors managing connections.
-Serialization is handled by Play Json, and all database communication runs via postgres-async. Scala.js compiles the
+Serialization is handled by Play Json, and all database communication runs via mysql-async. Scala.js compiles the
 shared code and provides an in-browser component. 
 
 The index page opens a websocket connection for bidirectional communication, handled via Play and Akka.
@@ -85,11 +85,13 @@ Boilerplay relies on a whole lot of tremendous open source projects. Here's a fe
 * [Play Framework](https://www.playframework.com)
 * [Akka](http://akka.io)
 * [Sangria](http://sangria-graphql.org)
+* [Graphiql](https://github.com/graphql/graphiql)
+* [GraphQL Voyager](https://github.com/APIs-guru/graphql-voyager)
 * [Materialize CSS](http://materializecss.com)
 * [Enumeratum](https://github.com/lloydmeta/enumeratum)
 * [circe](https://circe.github.io/circe)
 * [Scalatags](https://github.com/lihaoyi/scalatags)
-* [Postgres-async](https://github.com/mauricio/postgresql-async)
+* [mysql-async](https://github.com/mauricio/postgresql-async)
 * [Silhouette](https://www.silhouette.rocks)
 * [Dropwizard Metrics](http://metrics.dropwizard.io)
 * [Netty](http://netty.io)

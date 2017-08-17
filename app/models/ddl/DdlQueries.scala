@@ -9,7 +9,7 @@ object DdlQueries extends BaseQueries[DdlFile] {
 
   def getAll = GetAll
   case object GetIds extends Query[Seq[Int]] {
-    override def sql = s"""select "id" from "$tableName" order by "id" """
+    override def sql = s"""select `id` from `$tableName` order by `id` """
     override def reduce(rows: Iterator[Row]) = rows.map(_.as[Int]("id")).toSeq
   }
   def insert(f: DdlFile) = Insert(f)
@@ -21,11 +21,11 @@ object DdlQueries extends BaseQueries[DdlFile] {
   }
 
   case object CreateDdlTable extends Statement {
-    override val sql = """create table "ddl" (
-       "id" integer primary key,
-       "name" varchar(128) not null,
-       "sql" text not null,
-       "applied" timestamp not null
+    override val sql = """create table `ddl` (
+       `id` integer primary key,
+       `name` varchar(128) not null,
+       `sql` text not null,
+       `applied` timestamp not null
     );"""
   }
 
