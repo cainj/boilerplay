@@ -25,7 +25,7 @@ trait SearchQueries[T] { this: BaseQueries[T] =>
 
   protected case class SearchCount(q: String, filter: Seq[Filter] = Nil) extends Count(sql = {
     val f = filterClause(filters = filter, fields = fields, add = Some(searchClause(q))).map(" where " + _).getOrElse("")
-    s"""select count(*) as c from "`tableName`$f"""
+    s"""select count(*) as c from `$tableName`$f"""
   }, values = if (q.isEmpty) { filter.flatMap(_.v) } else { filter.flatMap(_.v) ++ searchColumns.map(_ => "%" + q + "%") })
 
   protected case class Search(q: String, filters: Seq[Filter], orderBys: Seq[OrderBy], limit: Option[Int], offset: Option[Int]) extends Query[List[T]] {
@@ -38,7 +38,7 @@ trait SearchQueries[T] { this: BaseQueries[T] =>
   }
 
   protected case class SearchExact(q: String, orderBys: Seq[OrderBy], limit: Option[Int], offset: Option[Int]) extends Query[List[T]] {
-    private[this] val whereClause = searchColumns.map(c => s"""lower("$c"::text) = ?""").mkString(" or ")
+    private[this] val whereClause = searchColumns.map(c => s"""lower(`$c`) = ?""").mkString(" or ")
     override val sql = getSql(whereClause = Some(whereClause), orderBy = orderClause(orderBys, fields), limit = limit, offset = offset)
     override val values = searchColumns.map(_ => q.toLowerCase)
     override def reduce(rows: Iterator[Row]) = rows.map(fromRow).toList
