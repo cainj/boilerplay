@@ -5,10 +5,9 @@ import com.mohiva.play.silhouette.api.{LoginEvent, LogoutEvent}
 import com.mohiva.play.silhouette.impl.exceptions.IdentityNotFoundException
 import com.mohiva.play.silhouette.impl.providers.CredentialsProvider
 import controllers.BaseController
+import models.Application
 import models.user.UserForms
-import util.FutureUtils.webContext
 import services.user.UserSearchService
-import util.Application
 
 import scala.concurrent.Future
 
@@ -17,16 +16,18 @@ class AuthenticationController @javax.inject.Inject() (
     override val app: Application,
     userSearchService: UserSearchService,
     credentialsProvider: CredentialsProvider
-) extends BaseController {
+) extends BaseController("authentication") {
+  import app.contexts.webContext
+
   def signInForm = withoutSession("form") { implicit request =>
     //val src = request.headers.get("Referer").filter(_.contains(request.host))
-    val resp = Ok(views.html.auth.signin(request.identity, UserForms.signInForm))
+    val resp = Ok(views.html.auth.signin(request.identity, UserForms.signInForm, app.settingsService.allowRegistration))
     Future.successful(resp)
   }
 
   def authenticateCredentials = withoutSession("authenticate") { implicit request =>
     UserForms.signInForm.bindFromRequest.fold(
-      form => Future.successful(BadRequest(views.html.auth.signin(request.identity, form))),
+      form => Future.successful(BadRequest(views.html.auth.signin(request.identity, form, app.settingsService.allowRegistration))),
       credentials => {
         val creds = credentials.copy(identifier = credentials.identifier.toLowerCase)
         credentialsProvider.authenticate(creds).flatMap { loginInfo =>

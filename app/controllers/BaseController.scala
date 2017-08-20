@@ -1,74 +1,79 @@
 package controllers
 
+import brave.Span
 import com.mohiva.play.silhouette.api.actions.{SecuredRequest, UserAwareRequest}
+import models.Application
 import models.auth.AuthEnv
 import models.result.data.DataField
-import util.FutureUtils.webContext
+import models.user.{Role, User}
 import play.api.mvc._
 import util.metrics.Instrumented
-import util.{Application, Logging}
+import util.web.TracingFilter
+import util.Logging
+import zipkin.TraceKeys
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-abstract class BaseController() extends InjectedController with Instrumented with Logging {
-  def app: Application
+abstract class BaseController(name: String) extends InjectedController with Instrumented with Logging {
+  protected def app: Application
 
-  def withAdminSession(action: String)(block: (SecuredRequest[AuthEnv, AnyContent]) => Future[Result]) = {
-    app.silhouette.SecuredAction.async { implicit request =>
-      metrics.timer(action).timeFuture {
-        if (request.identity.isAdmin) {
-          block(request)
-        } else {
-          Future.successful(Redirect(controllers.routes.HomeController.home()).flashing("error" -> "You must have admin rights to access that page."))
-        }
-      }
-    }
-  }
+  private[this] lazy val endpoint = app.tracing.endpointFor(name + ".controller")
 
-  def withoutSession(action: String)(block: UserAwareRequest[AuthEnv, AnyContent] => Future[Result]) = {
+  protected def withoutSession(action: String)(
+    block: UserAwareRequest[AuthEnv, AnyContent] => Future[Result]
+  )(implicit ec: ExecutionContext) = {
     app.silhouette.UserAwareAction.async { implicit request =>
       metrics.timer(action).timeFuture {
+        enhanceRequest(request, None, getTraceData.span)
         block(request)
       }
     }
   }
 
-  def withSession(action: String)(block: (SecuredRequest[AuthEnv, AnyContent]) => Future[Result]) = {
+  protected def withSession(action: String, admin: Boolean = false)(
+    block: SecuredRequest[AuthEnv, AnyContent] => Future[Result]
+  )(implicit ec: ExecutionContext) = {
     app.silhouette.UserAwareAction.async { implicit request =>
-      metrics.timer(action).timeFuture {
-        request.identity match {
-          case Some(u) =>
-            val auth = request.authenticator.getOrElse(throw new IllegalStateException("Somehow, you're not logged in."))
-            block(SecuredRequest(u, auth, request))
-          case None =>
-            val result = app.userService.countAll().map { count =>
-              if (count == 0) {
-                Redirect(controllers.auth.routes.RegistrationController.registrationForm())
-              } else {
-                Redirect(controllers.auth.routes.AuthenticationController.signInForm())
-              }
-            }
-
-            val flashed = result.map(_.flashing(
-              "error" -> s"You must sign in or register before accessing ${util.Config.projectName}."
-            ))
-
-            flashed.map { r =>
-              if (!request.uri.contains("signin")) {
-                r.withSession(r.session + ("returnUrl" -> request.uri))
-              } else {
-                log.info(s"Skipping returnUrl for external url [${request.uri}].")
-                r
-              }
-            }
+      request.identity match {
+        case Some(u) => if (admin && u.role != Role.Admin) {
+          failRequest(request)
+        } else {
+          metrics.timer(action).timeFuture {
+            enhanceRequest(request, Some(u), getTraceData.span)
+            val r = SecuredRequest(u, request.authenticator.get, request)
+            block(r)
+          }
         }
+        case None => failRequest(request)
       }
     }
   }
+
+  protected implicit def getTraceData(implicit requestHeader: RequestHeader) = requestHeader.attrs(TracingFilter.traceKey)
 
   protected def modelForm(rawForm: Option[Map[String, Seq[String]]]) = {
     val form = rawForm.getOrElse(Map.empty).mapValues(_.head)
     val fields = form.toSeq.filter(x => x._1.endsWith(".include") && x._2 == "true").map(_._1.stripSuffix(".include"))
     fields.map(f => DataField(f, Some(form.getOrElse(f, throw new IllegalStateException(s"Cannot find value for included field [$f].")))))
+  }
+
+  private[this] def enhanceRequest(request: Request[AnyContent], user: Option[User], trace: Span) = {
+    trace.tag(TraceKeys.HTTP_REQUEST_SIZE, request.body.asRaw.size.toString)
+    trace.remoteEndpoint(endpoint)
+    user.foreach { u =>
+      trace.tag("user.id", u.id.toString)
+      trace.tag("user.username", u.username)
+      trace.tag("user.email", u.profile.providerKey)
+      trace.tag("user.role", u.role.toString)
+    }
+  }
+
+  private[this] def failRequest(request: UserAwareRequest[AuthEnv, AnyContent]) = {
+    val msg = request.identity match {
+      case Some(_) => "You must be an administrator to access that."
+      case None => s"You must sign in or register before accessing ${util.Config.projectName}."
+    }
+    val res = Redirect(controllers.auth.routes.AuthenticationController.signInForm())
+    Future.successful(res.flashing("error" -> msg).withSession(request.session + ("returnUrl" -> request.uri)))
   }
 }

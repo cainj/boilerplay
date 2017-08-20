@@ -4,10 +4,9 @@ import com.mohiva.play.silhouette.api.exceptions.ProviderException
 import com.mohiva.play.silhouette.api.repositories.AuthInfoRepository
 import com.mohiva.play.silhouette.api.util.{Credentials, PasswordHasher}
 import com.mohiva.play.silhouette.impl.providers.CredentialsProvider
+import models.Application
 import models.user.UserForms
-import util.FutureUtils.webContext
 import services.user.UserService
-import util.Application
 import util.web.FormUtils
 
 import scala.concurrent.Future
@@ -18,7 +17,9 @@ class ProfileController @javax.inject.Inject() (
     authInfoRepository: AuthInfoRepository,
     credentialsProvider: CredentialsProvider,
     hasher: PasswordHasher
-) extends BaseController {
+) extends BaseController("profile") {
+  import app.contexts.webContext
+
   def view = withSession("view") { implicit request =>
     Future.successful(Ok(views.html.profile.view(request.identity)))
   }
@@ -31,7 +32,7 @@ class ProfileController @javax.inject.Inject() (
           theme = profileData.theme
         )
         val newUser = request.identity.copy(username = profileData.username, preferences = newPrefs)
-        app.userService.save(newUser, update = true)
+        app.userService.update(newUser)
         Future.successful(Redirect(controllers.routes.HomeController.home()))
       }
     )

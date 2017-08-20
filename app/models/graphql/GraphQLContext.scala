@@ -1,6 +1,8 @@
 package models.graphql
 
+import models.Application
 import models.user.User
-import util.Application
+import services.ServiceRegistry
+import util.tracing.TraceData
 
-case class GraphQLContext(app: Application, user: User)
+case class GraphQLContext(app: Application, services: ServiceRegistry, user: User, implicit val trace: TraceData)

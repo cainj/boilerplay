@@ -4,26 +4,32 @@ import models.queries.settings.SettingQueries
 import models.settings.{Setting, SettingKey}
 import util.FutureUtils.databaseContext
 import services.database.Database
+import util.tracing.{TraceData, TracingService}
 
-object SettingsService {
+import scala.concurrent.Future
+
+@javax.inject.Singleton
+class SettingsService @javax.inject.Inject() (tracing: TracingService) {
   private[this] var settings = Seq.empty[Setting]
   private[this] var settingsMap = Map.empty[SettingKey, String]
 
   def apply(key: SettingKey) = settingsMap.getOrElse(key, key.default)
   def asBool(key: SettingKey) = apply(key) == "true"
-  def getOrSet(key: SettingKey, s: => String) = settingsMap.getOrElse(key, set(key, s))
+  def getOrSet(key: SettingKey, s: => String)(implicit trace: TraceData) = tracing.trace("get.or.set")(_ => settingsMap.getOrElse(key, set(key, s)))
 
-  def load() = Database.query(SettingQueries.getAll()).map(_.map(s => s.key -> s.value).toMap).map { x =>
-    settingsMap = x
-    settings = SettingKey.values.map(k => Setting(k, settingsMap.getOrElse(k, k.default)))
+  def load()(implicit trace: TraceData) = tracing.trace("get.or.set") { tn =>
+    Database.query(SettingQueries.getAll())(tn).map(_.map(s => s.key -> s.value).toMap).map { x =>
+      settingsMap = x
+      settings = SettingKey.values.map(k => Setting(k, settingsMap.getOrElse(k, k.default)))
+    }
   }
 
   def isOverride(key: SettingKey) = settingsMap.isDefinedAt(key)
 
-  def getAll = settings
+  def getAll = Future.successful(settings)
   def getOverrides = settings.filter(s => isOverride(s.key))
 
-  def set(key: SettingKey, value: String) = {
+  def set(key: SettingKey, value: String)(implicit trace: TraceData) = {
     val s = Setting(key, value)
     if (s.isDefault) {
       settingsMap = settingsMap - key

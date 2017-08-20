@@ -3,12 +3,12 @@ package controllers
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.mohiva.play.silhouette.api.HandlerResult
-import models.{RequestMessage, ResponseMessage}
-import util.FutureUtils.webContext
+import models.{Application, RequestMessage, ResponseMessage}
 import play.api.libs.streams.ActorFlow
 import play.api.mvc.{AnyContentAsEmpty, Request, WebSocket}
+import play.twirl.api.HtmlFormat
 import services.socket.SocketService
-import util.Application
+import util.tracing.TraceData
 import util.web.MessageFrameFormatter
 
 import scala.concurrent.Future
@@ -18,7 +18,9 @@ class HomeController @javax.inject.Inject() (
     override val app: Application,
     implicit val system: ActorSystem,
     implicit val materializer: Materializer
-) extends BaseController {
+) extends BaseController("home") {
+  import app.contexts.webContext
+
   private[this] implicit val t = new MessageFrameFormatter(app.config.debug).transformer
 
   def home() = withSession("home") { implicit request =>
@@ -33,7 +35,7 @@ class HomeController @javax.inject.Inject() (
       case HandlerResult(_, Some(user)) => Right(ActorFlow.actorRef { out =>
         SocketService.props(None, app.supervisor, user, out, request.remoteAddress)
       })
-      case HandlerResult(_, None) => Left(Redirect(controllers.routes.HomeController.home()))
+      case HandlerResult(_, None) => Left(Redirect(controllers.routes.HomeController.home()).flashing("error" -> "You're not signed in."))
     }
   }
 

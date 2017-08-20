@@ -3,7 +3,7 @@ package models.user
 import java.util.UUID
 
 import com.mohiva.play.silhouette.api.LoginInfo
-import models.graphql.{CommonSchema, GraphQLContext}
+import models.graphql.{CommonSchema, GraphQLContext, SchemaHelper}
 import sangria.macros.derive._
 import sangria.schema._
 import models.graphql.CommonSchema._
@@ -13,12 +13,12 @@ import models.result.orderBy.OrderBySchema._
 import models.result.paging.PagingSchema.pagingOptionsType
 import models.template.Theme
 import sangria.execution.deferred.{Fetcher, HasId}
-import models.result.filter.FilterSchema.reportFiltersArg
-import models.result.orderBy.OrderBySchema.orderBysArg
 import models.result.paging.PagingOptions
 import util.FutureUtils.graphQlContext
 
-object UserSchema {
+import scala.concurrent.Future
+
+object UserSchema extends SchemaHelper("user") {
   implicit val roleEnum = CommonSchema.deriveEnumeratumType(
     name = "Role",
     description = "The role of the system user.",
@@ -35,11 +35,11 @@ object UserSchema {
 
   val userPrimaryKeyId = HasId[User, UUID](_.id)
   val userByPrimaryKeyFetcher = Fetcher { (c: GraphQLContext, idSeq: Seq[UUID]) =>
-    c.app.userService.getByPrimaryKeySeq(idSeq)
+    c.app.userService.getByPrimaryKeySeq(idSeq)(c.trace)
   }(userPrimaryKeyId)
 
   val userByRoleFetcher = Fetcher { (c: GraphQLContext, roleSeq: Seq[Role]) =>
-    c.app.userService.getByRoleSeq(roleSeq)
+    c.app.userService.getByRoleSeq(roleSeq)(c.trace)
   }(HasId[User, Role](_.role))
 
   implicit val loginInfoType = deriveObjectType[GraphQLContext, LoginInfo](ObjectTypeDescription("Information about login credentials."))
@@ -48,37 +48,25 @@ object UserSchema {
 
   implicit lazy val userResultType: ObjectType[GraphQLContext, UserResult] = deriveObjectType()
 
+  private[this] def toResult(r: SearchResult[User]) = {
+    UserResult(paging = r.paging, filters = r.args.filters, orderBys = r.args.orderBys, totalCount = r.count, results = r.results, durationMs = r.dur)
+  }
+
   val queryFields = fields[GraphQLContext, Unit](
     Field(
       name = "profile",
       description = Some("Returns information about the currently logged in user."),
       fieldType = profileType,
-      resolve = c => {
+      resolve = c => trace(c.ctx, "profile") { _ =>
         val u = c.ctx.user
-        UserProfile(u.id, u.username, u.profile.providerKey, u.role, u.preferences.theme, u.created)
+        Future.successful(UserProfile(u.id, u.username, u.profile.providerKey, u.role, u.preferences.theme, u.created))
       }
     ),
     Field(
       name = "user",
       fieldType = userResultType,
       arguments = queryArg :: reportFiltersArg :: orderBysArg :: limitArg :: offsetArg :: Nil,
-      resolve = c =>
-      {
-        val start = util.DateUtils.now
-        val filters = c.arg(reportFiltersArg).getOrElse(Nil)
-        val orderBys = c.arg(orderBysArg).getOrElse(Nil)
-        val limit = c.arg(limitArg)
-        val offset = c.arg(offsetArg)
-        val f = c.arg(CommonSchema.queryArg) match {
-          case Some(q) => c.ctx.app.userService.searchWithCount(q, filters, orderBys, limit, offset)
-          case _ => c.ctx.app.userService.getAllWithCount(filters, orderBys, limit, offset)
-        }
-        f.map { r =>
-          val paging = PagingOptions.from(r._1, limit, offset)
-          val durationMs = (System.currentTimeMillis - util.DateUtils.toMillis(start)).toInt
-          UserResult(paging = paging, filters = filters, orderBys = orderBys, totalCount = r._1, results = r._2, durationMs = durationMs)
-        }
-      }
+      resolve = c => trace(c.ctx, "search")(implicit timing => runSearch(c.ctx.app.userService, c).map(toResult))
     )
   )
 }

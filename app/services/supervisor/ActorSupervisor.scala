@@ -8,7 +8,7 @@ import models._
 import models.user.User
 import java.time.LocalDateTime
 import util.metrics.{InstrumentedActor, MetricsServletActor}
-import util.{Application, DateUtils, Logging}
+import util.{DateUtils, Logging}
 
 object ActorSupervisor {
   case class SocketRecord(userId: UUID, name: String, actorRef: ActorRef, started: LocalDateTime)
@@ -22,6 +22,7 @@ class ActorSupervisor(val app: Application) extends InstrumentedActor with Loggi
 
   override def preStart() = {
     context.actorOf(MetricsServletActor.props(app.config.metrics), "metrics-servlet")
+    log.debug(s"Actor Supervisor started for [${util.Config.projectId}].")
   }
 
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy() {

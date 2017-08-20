@@ -7,9 +7,8 @@ import com.mohiva.play.silhouette.api.util.PasswordHasher
 import com.mohiva.play.silhouette.api.{LoginInfo, SignUpEvent}
 import com.mohiva.play.silhouette.impl.providers.CredentialsProvider
 import controllers.BaseController
+import models.Application
 import models.user.{Role, User, UserPreferences}
-import util.Application
-import util.FutureUtils.webContext
 import util.web.FormUtils
 
 import scala.concurrent.Future
@@ -19,12 +18,14 @@ class UserCreateController @javax.inject.Inject() (
     override val app: Application,
     authInfoRepository: AuthInfoRepository,
     hasher: PasswordHasher
-) extends BaseController {
-  def createForm() = withAdminSession("admin-user-form") { implicit request =>
+) extends BaseController("user.create") {
+  import app.contexts.webContext
+
+  def createForm() = withSession("admin.user.create.form", admin = true) { implicit request =>
     Future.successful(Ok(views.html.admin.user.userCreate(request.identity)))
   }
 
-  def create() = withAdminSession("admin-user-create") { implicit request =>
+  def create() = withSession("admin.user.create", admin = true) { implicit request =>
     val form = FormUtils.getForm(request)
     val id = UUID.randomUUID
     val loginInfo = LoginInfo(CredentialsProvider.ID, form("email").trim)
@@ -46,7 +47,7 @@ class UserCreateController @javax.inject.Inject() (
         profile = loginInfo,
         role = role
       )
-      val userSavedFuture = app.userService.save(user)
+      val userSavedFuture = app.userService.insert(user)
       val authInfo = hasher.hash(form("password"))
       for {
         _ <- authInfoRepository.add(loginInfo, authInfo)

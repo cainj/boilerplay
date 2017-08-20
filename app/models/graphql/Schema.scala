@@ -1,9 +1,9 @@
 package models.graphql
 
 import models.sandbox.SandboxSchema
-import models.settings.SettingSchema
+import models.settings.SettingsSchema
 import models.user.UserSchema
-import sangria.execution.deferred.{DeferredResolver, Fetcher}
+import sangria.execution.deferred.DeferredResolver
 import sangria.schema._
 
 object Schema {
@@ -15,7 +15,7 @@ object Schema {
 
   val resolver = DeferredResolver.fetchers(UserSchema.userByPrimaryKeyFetcher +: modelFetchers: _*)
 
-  val baseQueryFields = UserSchema.queryFields ++ SettingSchema.queryFields ++ SandboxSchema.queryFields
+  val baseQueryFields = UserSchema.queryFields ++ SettingsSchema.queryFields ++ SandboxSchema.queryFields
 
   val modelQueryFields = {
     // Start model query fields
@@ -43,6 +43,8 @@ object Schema {
 
   val schema = sangria.schema.Schema(
     query = queryType,
-    mutation = Some(mutationType)
+    mutation = Some(mutationType),
+    subscription = None,
+    additionalTypes = Nil
   )
 }
