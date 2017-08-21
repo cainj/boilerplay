@@ -45,18 +45,18 @@ object UserQueries extends BaseQueries[User] {
   }
 
   case class SetRole(id: UUID, role: Role) extends Statement {
-    override val sql = s"""update "$tableName" set \"role\" = ? where \"id\" = ?"""
+    override val sql = s"""update "$tableName" set `role` = ? where \"id\" = ?"""
     override val values = Seq(role.toString, id)
   }
 
   case class FindUserByUsername(username: String) extends FlatSingleRowQuery[User] {
-    override val sql = getSql(Some("\"username\" = ?"))
+    override val sql = getSql(Some("`username` = ?"))
     override val values = Seq(username)
     override def flatMap(row: Row) = Some(fromRow(row))
   }
 
   case class FindUserByProfile(loginInfo: LoginInfo) extends FlatSingleRowQuery[User] {
-    override val sql = getSql(Some("\"email\" = ?"))
+    override val sql = getSql(Some("`email` = ?"))
     override val values = Seq(loginInfo.providerKey)
     override def flatMap(row: Row) = Some(fromRow(row))
   }
