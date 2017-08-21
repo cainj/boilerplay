@@ -49,7 +49,7 @@ trait BaseQueries[T] extends SearchQueries[T] with JodaDateUtils {
 
   protected case class InsertFields(dataFields: Seq[DataField]) extends Statement {
     private[this] val cols = dataFields.map(f => ResultFieldHelper.sqlForField("update", f.k, fields))
-    override val sql = s"insert into `$tableName` (${cols.map("\"" + _ + "\"").mkString(", ")}) values (${cols.map(_ => "?").mkString(", ")})"
+    override val sql = s"insert into `$tableName` (${cols.map("`" + _ + "`").mkString(", ")}) values (${cols.map(_ => "?").mkString(", ")})"
     override val values: Seq[Any] = dataFields.map(_.v)
   }
 
@@ -71,7 +71,7 @@ trait BaseQueries[T] extends SearchQueries[T] with JodaDateUtils {
 
   protected case class UpdateFields(pks: Seq[Any], dataFields: Seq[DataField]) extends Statement {
     private[this] val cols = dataFields.map(f => ResultFieldHelper.sqlForField("update", f.k, fields))
-    override val sql = s"""update `$tableName` set ${cols.map("\"" + _ + "\" = ?").mkString(", ")} where $pkWhereClause"""
+    override val sql = s"""update `$tableName` set ${cols.map("`" + _ + "` = ?").mkString(", ")} where $pkWhereClause"""
     override val values = dataFields.map(_.v) ++ pks
   }
 
@@ -80,7 +80,7 @@ trait BaseQueries[T] extends SearchQueries[T] with JodaDateUtils {
     override def reduce(rows: Iterator[Row]) = rows.map(fromRow).toList
   }
 
-  protected class ColSeqQuery(column: String, vals: Seq[Any] = Nil) extends SeqQuery("where \"" + column + "\" in (" + placeholdersFor(vals) + ")", vals)
+  protected class ColSeqQuery(column: String, vals: Seq[Any] = Nil) extends SeqQuery("where `" + column + "` in (" + placeholdersFor(vals) + ")", vals)
 
   protected abstract class OptQuery(additionalSql: String, override val values: Seq[Any] = Nil) extends FlatSingleRowQuery[T] {
     override val sql = s"""select $quotedColumns from `$tableName` $additionalSql"""

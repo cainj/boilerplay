@@ -11,7 +11,7 @@ import models.user.{Role, User, UserPreferences}
 import util.JsonSerializers
 
 object UserQueries extends BaseQueries[User] {
-  override val tableName = "users"
+  override val tableName = "local_users"
   override val fields = Seq(
     DatabaseField("id"), DatabaseField("username"), DatabaseField("prefs"), DatabaseField("email"), DatabaseField("role"), DatabaseField("created")
   )
@@ -21,7 +21,7 @@ object UserQueries extends BaseQueries[User] {
   val getByPrimaryKey = GetByPrimaryKey
   def getByPrimaryKeySeq(idSeq: Seq[UUID]) = new ColSeqQuery("id", idSeq)
 
-  def getByRole(role: Role) = new SeqQuery("where role = ?", Seq(role))
+  def getByRole(role: Role) = new SeqQuery("where `role` = ?", Seq(role))
   def getByRoleSeq(roleSeq: Seq[Role]) = new ColSeqQuery("role", roleSeq.map(_.toString))
 
   def countAll(filters: Seq[Filter] = Nil) = onCountAll(filters)
@@ -45,7 +45,7 @@ object UserQueries extends BaseQueries[User] {
   }
 
   case class SetRole(id: UUID, role: Role) extends Statement {
-    override val sql = s"""update "$tableName" set `role` = ? where \"id\" = ?"""
+    override val sql = s"update `$tableName` set `role` = ? where `id` = ?"
     override val values = Seq(role.toString, id)
   }
 

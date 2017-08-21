@@ -6,7 +6,7 @@ import models.result.filter.Filter
 import models.result.orderBy.OrderBy
 
 trait SearchQueries[T] { this: BaseQueries[T] =>
-  private[this] def searchClause(q: String) = searchColumns.map(c => s"lower($lQuote$c$rQuote::text) like ?").mkString(" or ")
+  private[this] def searchClause(q: String) = searchColumns.map(c => s"lower(convert($lQuote$c$rQuote, char)) like ?").mkString(" or ")
   private[this] def whereClause(filters: Seq[Filter], add: Option[String] = None) = {
     filterClause(filters, fields).map(" where " + _).getOrElse("")
   }
@@ -41,7 +41,7 @@ trait SearchQueries[T] { this: BaseQueries[T] =>
   }
 
   protected case class SearchExact(q: String, orderBys: Seq[OrderBy], limit: Option[Int], offset: Option[Int]) extends Query[List[T]] {
-    private[this] val whereClause = searchColumns.map(c => s"lower($lQuote$c$rQuote::text) = ?").mkString(" or ")
+    private[this] val whereClause = searchColumns.map(c => s"lower(convert($lQuote$c$rQuote, char)) = ?").mkString(" or ")
     override val sql = getSql(whereClause = Some(whereClause), orderBy = orderClause(orderBys, fields), limit = limit, offset = offset)
     override val values = searchColumns.map(_ => q.toLowerCase)
     override def reduce(rows: Iterator[Row]) = rows.map(fromRow).toList
