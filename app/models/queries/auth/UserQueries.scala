@@ -21,7 +21,7 @@ object UserQueries extends BaseQueries[User] {
   val getByPrimaryKey = GetByPrimaryKey
   def getByPrimaryKeySeq(idSeq: Seq[UUID]) = new ColSeqQuery("id", idSeq)
 
-  def getByRole(role: Role) = new SeqQuery("where `role` = ?", Seq(role))
+  def getByRole(role: Role) = new SeqQuery(s"where ${quote("role")} = ?", Seq(role))
   def getByRoleSeq(roleSeq: Seq[Role]) = new ColSeqQuery("role", roleSeq.map(_.toString))
 
   def countAll(filters: Seq[Filter] = Nil) = onCountAll(filters)
@@ -45,18 +45,18 @@ object UserQueries extends BaseQueries[User] {
   }
 
   case class SetRole(id: UUID, role: Role) extends Statement {
-    override val sql = s"update `$tableName` set `role` = ? where `id` = ?"
+    override val sql = s"update ${quote(tableName)} set ${quote("role")} = ? where ${quote("id")} = ?"
     override val values = Seq(role.toString, id)
   }
 
   case class FindUserByUsername(username: String) extends FlatSingleRowQuery[User] {
-    override val sql = getSql(Some("`username` = ?"))
+    override val sql = getSql(Some(quote("username") + " = ?"))
     override val values = Seq(username)
     override def flatMap(row: Row) = Some(fromRow(row))
   }
 
   case class FindUserByProfile(loginInfo: LoginInfo) extends FlatSingleRowQuery[User] {
-    override val sql = getSql(Some("`email` = ?"))
+    override val sql = getSql(Some(quote("email") + " = ?"))
     override val values = Seq(loginInfo.providerKey)
     override def flatMap(row: Row) = Some(fromRow(row))
   }
