@@ -11,7 +11,7 @@ import models.user.{Role, User, UserPreferences}
 import util.JsonSerializers
 
 object UserQueries extends BaseQueries[User] {
-  override val tableName = "local_users"
+  override val tableName = "users"
   override val fields = Seq(
     DatabaseField("id"), DatabaseField("username"), DatabaseField("prefs"), DatabaseField("email"), DatabaseField("role"), DatabaseField("created")
   )
@@ -62,7 +62,7 @@ object UserQueries extends BaseQueries[User] {
   }
 
   override protected def fromRow(row: Row) = {
-    val id = UUID.fromString(row.as[String]("id"))
+    val id = row.as[UUID]("id")
     val username = row.as[String]("username")
     val prefsString = row.as[String]("prefs")
     val preferences = JsonSerializers.readPreferences(prefsString)

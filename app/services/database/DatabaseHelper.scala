@@ -1,8 +1,11 @@
 package services.database
 
+import java.net.InetAddress
+
 import com.github.mauricio.async.db.pool.ConnectionPool
 import com.github.mauricio.async.db.mysql.MySQLConnection
 import com.github.mauricio.async.db.{Configuration, Connection, QueryResult}
+import com.google.common.net.InetAddresses
 import models.database.{RawQuery, Statement}
 import util.FutureUtils.databaseContext
 import util.Logging
@@ -16,11 +19,22 @@ trait DatabaseHelper extends Instrumented with Logging {
   protected[this] def tracing: TracingService
   protected[this] def pool: ConnectionPool[MySQLConnection]
   protected[this] def getConfig: Configuration
+  protected[this] def name: String
+
+
+  private[this] lazy val endpoint = {
+    val builder = Endpoint.builder().port(getConfig.port).serviceName("database." + name)
+    InetAddress.getByName(getConfig.host) match {
+      case x if x.getAddress.length == 4 => builder.ipv4(InetAddresses.coerceToInteger(x))
+      case x => builder.ipv6(x.getAddress)
+    }
+    builder.build()
+  }
 
   private[this] def prependComment(obj: Object, sql: String) = s"/* ${obj.getClass.getSimpleName.replace("$", "")} */ $sql"
 
   private[this] def trace[A](name: String)(f: TraceData => Future[A])(implicit traceData: TraceData) = tracing.trace(name) { td =>
-    td.span.kind(brave.Span.Kind.CLIENT).remoteEndpoint(Endpoint.builder().port(getConfig.port).serviceName("database.master").build())
+    td.span.kind(brave.Span.Kind.CLIENT).remoteEndpoint(endpoint)
     f(td)
   }
 
