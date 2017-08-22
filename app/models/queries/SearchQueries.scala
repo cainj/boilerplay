@@ -44,11 +44,7 @@ trait SearchQueries[T] { this: BaseQueries[T] =>
   }
 
   protected case class SearchExact(q: String, orderBys: Seq[OrderBy], limit: Option[Int], offset: Option[Int]) extends Query[List[T]] {
-<<<<<<< HEAD
-    private[this] val whereClause = searchColumns.map(c => s"lower(convert($lQuote$c$rQuote, char)) = ?").mkString(" or ")
-=======
-    private[this] val whereClause = searchColumns.map(c => s"lower(${quote(c)}::text) = ?").mkString(" or ")
->>>>>>> master
+    private[this] val whereClause = searchColumns.map(c => s"lower(convert(${quote(c)}, char)) = ?").mkString(" or ")
     override val sql = getSql(whereClause = Some(whereClause), orderBy = orderClause(orderBys, fields), limit = limit, offset = offset)
     override val values = searchColumns.map(_ => q.toLowerCase)
     override def reduce(rows: Iterator[Row]) = rows.map(fromRow).toList
