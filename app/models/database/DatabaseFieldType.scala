@@ -14,7 +14,12 @@ sealed abstract class DatabaseFieldType[T](val key: String, val isNumeric: Boole
 object DatabaseFieldType extends Enum[DatabaseFieldType[_]] with JodaDateUtils {
   case object StringType extends DatabaseFieldType[String]("string")
   case object BigDecimalType extends DatabaseFieldType[BigDecimal]("decimal", isNumeric = true)
-  case object BooleanType extends DatabaseFieldType[Boolean]("boolean")
+
+  case object BooleanType extends DatabaseFieldType[Boolean]("boolean") {
+    override def apply(row: Row, col: String) = row.as[Byte](col) == 1.toByte
+    override def opt(row: Row, col: String) = row.asOpt[Byte](col).map(_ == 1.toByte)
+  }
+
   case object ByteType extends DatabaseFieldType[Byte]("byte")
   case object ShortType extends DatabaseFieldType[Short]("short", isNumeric = true)
   case object IntegerType extends DatabaseFieldType[Int]("int", isNumeric = true)
@@ -38,7 +43,11 @@ object DatabaseFieldType extends Enum[DatabaseFieldType[_]] with JodaDateUtils {
 
   case object RefType extends DatabaseFieldType[String]("ref")
   case object XmlType extends DatabaseFieldType[String]("xml")
-  case object UuidType extends DatabaseFieldType[UUID]("uuid")
+
+  case object UuidType extends DatabaseFieldType[UUID]("uuid") {
+    override def apply(row: Row, col: String) = UUID.fromString(row.as[String](col))
+    override def opt(row: Row, col: String) = row.asOpt[String](col).map(UUID.fromString)
+  }
 
   case object ObjectType extends DatabaseFieldType[String]("object")
   case object StructType extends DatabaseFieldType[String]("struct")
